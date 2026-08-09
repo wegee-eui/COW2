@@ -158,6 +158,16 @@
       pointer-events: auto;
     }
 
+    @media (hover: none), (pointer: coarse) {
+      .product.is-touch-preview { z-index: 20; }
+      .product.is-touch-preview .default-cylinder { opacity: 0; }
+      .product.is-touch-preview .hover-frame {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+      }
+    }
+
     /* ID card keeps the original Figma overlay position to the right.
        Its coordinates are rebuilt at the same 35% physical size as the home canvas. */
     .info-card {
@@ -479,6 +489,7 @@
       const backButton = byId('backButton');
 
       let selectedTrigger = null;
+      let touchPreviewButton = null;
       let renderedCount = 0;
       let scaleFrame = 0;
       let loadObserver = null;
@@ -603,7 +614,21 @@
       productList.addEventListener('click', (event) => {
         const button = event.target.closest('.product');
         if (!button) return;
-        openInfo(Number(button.dataset.product), button);
+
+        const touchMode = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+        if (!touchMode) {
+          openInfo(Number(button.dataset.product), button);
+          return;
+        }
+
+        if (touchPreviewButton === button) {
+          openInfo(Number(button.dataset.product), button);
+          return;
+        }
+
+        if (touchPreviewButton) touchPreviewButton.classList.remove('is-touch-preview');
+        touchPreviewButton = button;
+        button.classList.add('is-touch-preview');
       });
 
       buyButton.addEventListener('click', () => setView('checkout'));
